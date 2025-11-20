@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>托福词汇 API 版</title>
+    <style>
+        /* 样式保持简洁美观 */
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #status-bar { background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 20px; }
+        .highlight { color: #4a90e2; font-weight: bold; }
+        
+        #game-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; max-width: 800px; }
+        .col-title { text-align: center; color: #888; margin-bottom: 10px; }
+        .card-col { display: flex; flex-direction: column; gap: 10px; }
+        
+        .card { background: white; padding: 15px; text-align: center; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; user-select: none; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card.selected { border-color: #4a90e2; background: #eaf4ff; color: #4a90e2; }
+        .card.matched { opacity: 0; pointer-events: none; transform: scale(0.8); }
+        .card.wrong { border-color: #ff4d4f; background: #fff1f0; animation: shake 0.3s; }
+        
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:999; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        button { background: #4a90e2; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- 加载界面 -->
+    <div id="loading">
+        <div class="loader"></div>
+        <div id="loading-text">正在连接云端题库...</div>
+    </div>
+
+    <div id="status-bar">
+        <span>剩余单词: <span id="left-count" class="highlight">--</span></span>
+        <span>得分: <span id="score" class="highlight">0</span></span>
+    </div>
+
+    <div id="game-container">
+        <div>
+            <div class="col-title">English</div>
+            <div id="col-en" class="card-col"></div>
+        </div>
+        <div>
+            <div class="col-title">Meaning</div>
+            <div id="col-zh" class="card-col"></div>
+        </div>
+    </div>
+    
+    <button id="next-btn" onclick="nextRound()">下一组 (Next Level)</button>
+
+    <script>
+        // ============================================================
+        // 核心配置：这里使用了 JSON 托管服务作为 "词库 API"
+        // 你可以随时把这个 URL 换成你自己的 gist raw url
+        // https://www.npoint.io/docs/702ced1a5f26783b1954============================================================
+        const WORD_LIB_API = "https://api.npoint.io/702ced1a5f26783b1954"; 
+        
+        // 游戏状态
+        let fullLibrary = []; // 总词库
+        let gamePool = [];    // 当前剩余词库
+        let currentRound = []; // 本轮的8个词
+        let score = 0;
+        let matches = 0;
+        let selectedEn = null;
+        let selectedZh = null;
+
+        // 1. 程序入口：调用 API 获取数据
+        async function init() {
+            try {
+                const res = await fetch(WORD_LIB_API);
+                if(!res.ok) throw new Error("网络请求失败");
+                
+                const data = await res.json();
+                
+                // 数据清洗：适配不同的 JSON 格式
+                fullLibrary = data.map(item => {
+                    // 兼容 ["word", "meaning"] 数组格式
+                    if(Array.isArray(item)) return { en: item[0], zh: item[1] };
+                    // 兼容 {en: "word", zh: "meaning"} 对象格式
+                    return item;
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                startGame();
+
+            } catch (err) {
+                document.getElementById('loading-text').innerHTML = 
+                    `API 连接失败<br><span style='font-size:12px;color:red'>${err.message}</span>`;
+            }
+        }
+
+        function startGame() {
+            gamePool = [...fullLibrary]; // 复制一份
+            shuffle(gamePool); // 洗牌
+            score = 0;
+            updateUI();
+            loadRound();
+        }
+
+        // 2. 加载一轮 (8个词)
+        function loadRound() {
+            document.getElementById('next-btn').style.display = 'none';
+            matches = 0;
+            
+            // 检查是否背完
+            if(gamePool.length === 0) {
+                alert("恭喜通关！所有单词已完成！");
+                return;
+            }
+
+            // 从池中取出 8 个
+            const count = Math.min(8, gamePool.length);
+            currentRound = gamePool.splice(0, count);
+            updateUI();
+
+            // 渲染
+            const colEn = document.getElementById('col-en');
+            const colZh = document.getElementById('col-zh');
+            colEn.innerHTML = '';
+            colZh.innerHTML = '';
+
+            // 准备卡片数据
+            let listEn = currentRound.map(w => ({ id: w.en, text: w.en, type: 'en' }));
+            let listZh = currentRound.map(w => ({ id: w.en, text: w.zh, type: 'zh' }));
+
+            shuffle(listEn);
+            shuffle(listZh);
+
+            listEn.forEach(item => colEn.appendChild(createCard(item)));
+            listZh.forEach(item => colZh.appendChild(createCard(item)));
+        }
+
+        function createCard(item) {
+            let div = document.createElement('div');
+            div.className = 'card';
+            div.innerText = item.text;
+            div.dataset.id = item.id;
+            div.dataset.type = item.type;
+            div.onclick = () => handleClick(div);
+            return div;
+        }
+
+        // 3. 交互逻辑
+        function handleClick(card) {
+            if(card.classList.contains('matched') || card.classList.contains('selected')) return;
+
+            card.classList.add('selected');
+
+            if(card.dataset.type === 'en') {
+                if(selectedEn) selectedEn.classList.remove('selected');
+                selectedEn = card;
+            } else {
+                if(selectedZh) selectedZh.classList.remove('selected');
+                selectedZh = card;
+            }
+
+            if(selectedEn && selectedZh) checkMatch();
+        }
+
+        function checkMatch() {
+            if(selectedEn.dataset.id === selectedZh.dataset.id) {
+                // 匹配成功
+                score += 10;
+                matches++;
+                selectedEn.className += ' matched';
+                selectedZh.className += ' matched';
+                selectedEn = null; selectedZh = null;
+                
+                if(matches === currentRound.length) {
+                    document.getElementById('next-btn').style.display = 'block';
+                }
+            } else {
+                // 匹配失败
+                selectedEn.classList.add('wrong');
+                selectedZh.classList.add('wrong');
+                setTimeout(() => {
+                    selectedEn.classList.remove('selected', 'wrong');
+                    selectedZh.classList.remove('selected', 'wrong');
+                    selectedEn = null; selectedZh = null;
+                }, 400);
+            }
+            updateUI();
+        }
+
+        window.nextRound = function() {
+            loadRound();
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('left-count').innerText = gamePool.length;
+        }
+
+        function shuffle(arr) {
+            arr.sort(() => Math.random() - 0.5);
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
