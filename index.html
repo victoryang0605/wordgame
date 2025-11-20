@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <!-- 核心：HTML5 移动端视口设置，禁止缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>托福词汇挑战 (移动版)</title>
+    <title>托福词汇挑战 (自适应对齐版)</title>
     <style>
         :root {
             --primary: #4f46e5;
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
             --card-bg: #ffffff;
             --text: #334155;
             --success: #10b981;
@@ -29,8 +29,8 @@
             height: 100dvh; 
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* 禁止整体滚动，只让中间区域滚动 */
-            user-select: none; /* 禁止长按复制文字 */
+            overflow: hidden;
+            user-select: none;
         }
 
         /* === 顶部仪表盘 === */
@@ -49,9 +49,7 @@
 
         .title { font-size: 18px; font-weight: 800; color: var(--primary); }
         .stats { font-size: 14px; color: #64748b; font-weight: 600; }
-        .stats span { color: var(--primary); margin-left: 4px; }
 
-        /* 进度条 */
         #progress-container {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: transparent;
         }
@@ -59,48 +57,63 @@
 
         /* === 游戏滚动区域 === */
         main {
-            flex: 1; /* 占据剩余空间 */
-            overflow-y: auto; /* 允许垂直滚动 */
+            flex: 1;
+            overflow-y: auto;
             padding: 15px;
-            /* 增加底部内边距，防止被底部按钮遮挡 */
-            padding-bottom: 20px; 
-            -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+            padding-bottom: 120px; /* 留出足够空间给底部按钮，防止遮挡 */
+            -webkit-overflow-scrolling: touch;
         }
 
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 两列等宽 */
-            gap: 12px;
-            max-width: 600px; /* 平板/电脑上限制最大宽度 */
+            gap: 10px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
         .col-header {
             text-align: center; color: #94a3b8; font-size: 12px; 
-            text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;
         }
 
-        /* === 卡片样式 (针对手指触摸优化) === */
+        /* === 卡片样式 (核心修改部分) === */
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px 8px; /* 增加点击区域 */
-            min-height: 60px; /* 保证最小高度适合手指点击 */
+            border-radius: 10px;
+            /* === 关键修改：固定高度实现对齐 === */
+            height: 90px; 
+            
+            /* Flex布局保证文字垂直居中 */
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 15px;
-            color: var(--text);
-            font-weight: 500;
+            
+            padding: 5px 8px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border: 2px solid transparent;
             transition: all 0.15s ease;
             cursor: pointer;
-            word-break: break-word; /* 防止长单词撑破 */
+            overflow: hidden; /* 防止文字溢出 */
         }
 
-        .card:active { transform: scale(0.96); background: #f1f5f9; }
+        /* 英文单词字体稍大 */
+        .card.en {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            font-family: 'Georgia', serif; /* 英文用衬线体更好辨识 */
+        }
+
+        /* 中文解释字体稍小，行高紧凑 */
+        .card.zh {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.3;
+        }
+
+        .card:active { transform: scale(0.96); background: #f8fafc; }
 
         .card.selected {
             border-color: var(--primary);
@@ -124,13 +137,12 @@
         /* === 底部固定操作区 === */
         footer {
             flex-shrink: 0;
-            background: linear-gradient(to top, #ffffff 80%, rgba(255,255,255,0));
+            background: linear-gradient(to top, #f1f5f9 85%, rgba(241, 245, 249, 0));
             padding: 10px 20px;
-            /* 适配 iPhone 底部安全区域 */
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
             text-align: center;
-            pointer-events: none; /* 让点击穿透上面的透明渐变层 */
-            position: absolute; /* 悬浮在最下方 */
+            pointer-events: none;
+            position: absolute;
             bottom: 0; width: 100%;
             z-index: 20;
         }
@@ -143,11 +155,11 @@
             padding: 14px 0;
             width: 100%;
             max-width: 400px;
-            border-radius: 50px;
+            border-radius: 12px; /* 稍微方一点 */
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-            display: none; /* 默认隐藏 */
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+            display: none;
             cursor: pointer;
         }
         .btn:active { transform: scale(0.98); }
@@ -172,12 +184,12 @@
     <!-- 加载界面 -->
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div id="loading-text" style="color:#64748b; font-size:14px;">正在同步云端词库...</div>
+        <div id="loading-text" style="color:#64748b; font-size:14px;">正在加载题库...</div>
     </div>
 
     <!-- 顶部固定 -->
     <header>
-        <div class="title">TOEFL</div>
+        <div class="title">TOEFL Match</div>
         <div class="stats">剩余: <span id="left-count">--</span></div>
         <div id="progress-container"><div id="progress-bar"></div></div>
     </header>
@@ -185,13 +197,15 @@
     <!-- 中间滚动 -->
     <main>
         <div class="grid-container">
+            <!-- 左列：英文 -->
             <div class="column">
-                <div class="col-header">ENGLISH</div>
-                <div id="col-en" style="display:grid; gap:12px;"></div>
+                <div class="col-header">Word</div>
+                <div id="col-en" style="display:grid; gap:10px;"></div>
             </div>
+            <!-- 右列：中文 -->
             <div class="column">
-                <div class="col-header">MEANING</div>
-                <div id="col-zh" style="display:grid; gap:12px;"></div>
+                <div class="col-header">Meaning</div>
+                <div id="col-zh" style="display:grid; gap:10px;"></div>
             </div>
         </div>
     </main>
@@ -203,7 +217,7 @@
 
     <script>
         // ============================================================
-        // API 设置 (使用 Raw JSON 链接)
+        // API 设置
         // ============================================================
         const API_URL = "https://api.npoint.io/702ced1a5f26783b1954"; 
 
@@ -212,7 +226,7 @@
         let currentRound = []; 
         let matches = 0;
         let selectedEn = null, selectedZh = null;
-        let isProcessing = false; // 防止连点
+        let isProcessing = false; 
 
         // 1. 程序入口
         async function init() {
@@ -225,7 +239,7 @@
                 
                 const data = await res.json();
                 
-                // === 数据智能适配逻辑 ===
+                // 数据智能适配
                 let dataArray = [];
                 if (Array.isArray(data)) {
                     dataArray = data;
@@ -234,7 +248,7 @@
                 }
 
                 if (!Array.isArray(dataArray) || dataArray.length === 0) {
-                    throw new Error("无法识别数据格式，请检查 JSON");
+                    throw new Error("无法识别数据格式");
                 }
 
                 // 数据清洗
@@ -267,11 +281,11 @@
             selectedEn = null; selectedZh = null;
 
             if (gamePool.length === 0) {
-                alert("太棒了！所有单词已完成！");
+                alert("通关！所有单词已完成！");
                 return;
             }
 
-            // 每次取 8 个
+            // 每次取 8 个 (手机屏幕通常放8个刚好)
             const count = Math.min(8, gamePool.length);
             currentRound = gamePool.splice(0, count);
             updateStats();
@@ -280,7 +294,6 @@
             const colZh = document.getElementById('col-zh');
             colEn.innerHTML = ''; colZh.innerHTML = '';
 
-            // 生成列表
             let listEn = currentRound.map(i => ({id: i.en, text: i.en, type: 'en'}));
             let listZh = currentRound.map(i => ({id: i.en, text: i.zh, type: 'zh'}));
             
@@ -293,12 +306,11 @@
 
         function createCard(data) {
             const div = document.createElement('div');
-            div.className = 'card';
+            // 区别中英文样式
+            div.className = `card ${data.type}`; 
             div.innerText = data.text;
             div.dataset.id = data.id;
             div.dataset.type = data.type;
-            
-            // 使用 touchstart 优化移动端响应速度（可选，这里用 click 也够快）
             div.onclick = () => handleTap(div);
             return div;
         }
@@ -306,8 +318,8 @@
         function handleTap(el) {
             if (isProcessing || el.classList.contains('matched') || el.classList.contains('selected')) return;
 
-            // 播放触觉反馈（如果有）
-            if (navigator.vibrate) navigator.vibrate(10);
+            // 震动反馈
+            if (navigator.vibrate) navigator.vibrate(5);
 
             el.classList.add('selected');
             
@@ -336,15 +348,15 @@
 
                 if (matches === currentRound.length) {
                     document.getElementById('next-btn').style.display = 'block';
-                    // 自动滚到底部以露出按钮
+                    // 平滑滚动到底部
                     setTimeout(() => {
                         document.querySelector('main').scrollTo({ top: 9999, behavior: 'smooth' });
-                    }, 300);
+                    }, 200);
                 }
             } else {
                 selectedEn.classList.add('wrong');
                 selectedZh.classList.add('wrong');
-                if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // 错误震动
+                if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
 
                 setTimeout(() => {
                     selectedEn.classList.remove('selected', 'wrong');
@@ -363,8 +375,6 @@
         function updateStats() {
             document.getElementById('left-count').innerText = gamePool.length;
             const total = fullLibrary.length;
-            const done = total - gamePool.length - (currentRound.length - matches);
-            // 简单的进度条计算
             const pct = total > 0 ? ((total - gamePool.length) / total) * 100 : 0;
             document.getElementById('progress-bar').style.width = `${pct}%`;
         }
@@ -373,7 +383,6 @@
             arr.sort(() => Math.random() - 0.5);
         }
 
-        // 启动
         init();
 
     </script>
