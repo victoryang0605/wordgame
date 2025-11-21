@@ -159,7 +159,7 @@
     <header>
         <div class="stat-box">❌ <span id="error-rate-display" style="margin-left:4px">0/0</span></div>
         <form class="search-form" action="javascript:void(0);" onsubmit="submitSearch()">
-            <input type="search" id="search-input" placeholder="请输入你要查找的单词..." autocomplete="off">
+            <input type="search" id="search-input" placeholder="搜词..." autocomplete="off">
             <button type="submit" class="search-btn">🔍</button>
         </form>
         <div class="info-right">
@@ -401,3 +401,80 @@
         function createCard(data) {
             const div = document.createElement('div');
             div.className = `card ${data.type}`;
+            div.innerText = data.text;
+            div.dataset.id = data.id;
+            div.dataset.type = data.type;
+            div.onclick = () => handleTap(div);
+            return div;
+        }
+
+        function handleTap(el) {
+            if (isProcessing || el.classList.contains('matched') || el.classList.contains('selected')) return;
+            if (navigator.vibrate) navigator.vibrate(5);
+
+            el.classList.add('selected');
+            
+            if (el.dataset.type === 'en') {
+                if (selectedEn) selectedEn.classList.remove('selected');
+                selectedEn = el;
+            } else {
+                if (selectedZh) selectedZh.classList.remove('selected');
+                selectedZh = el;
+            }
+
+            if (selectedEn && selectedZh) checkMatch();
+        }
+
+        function checkMatch() {
+            isProcessing = true;
+            const isMatch = selectedEn.dataset.id === selectedZh.dataset.id;
+            totalAttempts++; if (!isMatch) totalErrors++;
+            updateErrorStats();
+
+            if (isMatch) {
+                matches++;
+                selectedEn.classList.replace('selected', 'matched');
+                selectedZh.classList.replace('selected', 'matched');
+                selectedEn = null; selectedZh = null;
+                isProcessing = false;
+
+                if (matches === currentRound.length) {
+                    document.getElementById('next-btn').style.display = 'block';
+                    setTimeout(() => { document.querySelector('main').scrollTo({ top: 9999, behavior: 'smooth' }); }, 200);
+                }
+            } else {
+                selectedEn.classList.add('wrong');
+                selectedZh.classList.add('wrong');
+                if (navigator.vibrate) navigator.vibrate(50);
+
+                setTimeout(() => {
+                    selectedEn.classList.remove('selected', 'wrong');
+                    selectedZh.classList.remove('selected', 'wrong');
+                    selectedEn = null; selectedZh = null;
+                    isProcessing = false;
+                }, 400);
+            }
+        }
+
+        function updateErrorStats() {
+            const el = document.getElementById('error-rate-display');
+            el.innerText = `${totalErrors}/${totalAttempts}`;
+            if (totalErrors > 0) el.classList.add('error-text');
+        }
+
+        window.nextLevel = function() {
+            loadLevel(); document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateStats() {
+            const total = fullLibrary.length;
+            const pct = total > 0 ? ((total - gamePool.length) / total) * 100 : 0;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        function shuffle(arr) { arr.sort(() => Math.random() - 0.5); }
+
+        init();
+    </script>
+</body>
+</html>
