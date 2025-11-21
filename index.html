@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 核心：HTML5 移动端视口设置，禁止缩放 -->
+    <!-- 核心：移动端适配 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>托福词汇挑战 (自适应对齐版)</title>
+    <title>托福词汇特训 Pro</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -13,19 +13,16 @@
             --text: #334155;
             --success: #10b981;
             --error: #ef4444;
-            --header-height: 60px;
-            --footer-height: 80px;
+            --header-height: 65px; /*稍微增高以容纳搜索框*/
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
             padding: 0;
-            /* 核心：使用 dvh 适配移动端动态地址栏高度 */
-            height: 100vh; 
             height: 100dvh; 
             display: flex;
             flex-direction: column;
@@ -33,40 +30,84 @@
             user-select: none;
         }
 
-        /* === 顶部仪表盘 === */
+        /* === 顶部仪表盘 (新布局) === */
         header {
             height: var(--header-height);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 0 20px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 0 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            z-index: 10;
+            justify-content: space-between; /* 左右分布 */
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+            z-index: 50;
             flex-shrink: 0;
+            gap: 10px;
         }
 
-        .title { font-size: 18px; font-weight: 800; color: var(--primary); }
-        .stats { font-size: 14px; color: #64748b; font-weight: 600; }
+        /* 1. 左侧错误率 */
+        .stat-box {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            min-width: 60px; /* 防止抖动 */
+        }
+        .stat-icon { margin-right: 4px; }
+        .error-text { color: var(--error); }
 
+        /* 2. 中间搜索栏 */
+        .search-container {
+            flex: 1; /* 占据中间剩余空间 */
+            display: flex;
+            justify-content: center;
+        }
+        #search-input {
+            width: 100%;
+            max-width: 200px; /* 限制最大宽度 */
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 13px;
+            color: #334155;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        #search-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        /* 3. 右侧计时器 */
+        .timer-box {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums; /* 等宽数字，防止跳动 */
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* 进度条 */
         #progress-container {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: transparent;
         }
         #progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
 
-        /* === 游戏滚动区域 === */
+        /* === 游戏区域 === */
         main {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            padding-bottom: 120px; /* 留出足够空间给底部按钮，防止遮挡 */
+            padding-bottom: 100px;
             -webkit-overflow-scrolling: touch;
         }
 
         .grid-container {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 两列等宽 */
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             max-width: 600px;
             margin: 0 auto;
@@ -77,64 +118,34 @@
             text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;
         }
 
-        /* === 卡片样式 (核心修改部分) === */
+        /* 卡片样式 */
         .card {
             background: var(--card-bg);
             border-radius: 10px;
-            /* === 关键修改：固定高度实现对齐 === */
-            height: 90px; 
-            
-            /* Flex布局保证文字垂直居中 */
+            height: 90px; /* 固定高度对齐 */
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            
             padding: 5px 8px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border: 2px solid transparent;
             transition: all 0.15s ease;
             cursor: pointer;
-            overflow: hidden; /* 防止文字溢出 */
+            overflow: hidden;
         }
 
-        /* 英文单词字体稍大 */
-        .card.en {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1e293b;
-            font-family: 'Georgia', serif; /* 英文用衬线体更好辨识 */
-        }
-
-        /* 中文解释字体稍小，行高紧凑 */
-        .card.zh {
-            font-size: 13px;
-            color: #475569;
-            line-height: 1.3;
-        }
-
+        .card.en { font-size: 16px; font-weight: 600; color: #1e293b; font-family: 'Georgia', serif; }
+        .card.zh { font-size: 13px; color: #475569; line-height: 1.3; }
         .card:active { transform: scale(0.96); background: #f8fafc; }
-
-        .card.selected {
-            border-color: var(--primary);
-            background-color: #eef2ff;
-            color: var(--primary);
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
-        }
-
-        .card.matched {
-            opacity: 0; pointer-events: none; transform: scale(0.8); transition: transform 0.3s, opacity 0.3s;
-        }
-
-        .card.wrong {
-            background-color: #fef2f2; border-color: var(--error); color: var(--error);
-            animation: shake 0.4s;
-        }
+        
+        .card.selected { border-color: var(--primary); background-color: #eef2ff; color: var(--primary); font-weight: bold; }
+        .card.matched { opacity: 0; pointer-events: none; transform: scale(0.8); transition: transform 0.3s, opacity 0.3s; }
+        .card.wrong { background-color: #fef2f2; border-color: var(--error); color: var(--error); animation: shake 0.4s; }
         
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-        /* === 底部固定操作区 === */
+        /* === 底部按钮 === */
         footer {
             flex-shrink: 0;
             background: linear-gradient(to top, #f1f5f9 85%, rgba(241, 245, 249, 0));
@@ -142,44 +153,50 @@
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
             text-align: center;
             pointer-events: none;
-            position: absolute;
-            bottom: 0; width: 100%;
-            z-index: 20;
+            position: absolute; bottom: 0; width: 100%; z-index: 20;
         }
-
         .btn {
-            pointer-events: auto;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 0;
-            width: 100%;
-            max-width: 400px;
-            border-radius: 12px; /* 稍微方一点 */
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-            display: none;
-            cursor: pointer;
+            pointer-events: auto; background: var(--primary); color: white; border: none; padding: 14px 0; width: 100%; max-width: 400px;
+            border-radius: 12px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); display: none; cursor: pointer;
         }
-        .btn:active { transform: scale(0.98); }
 
-        /* === 加载遮罩 === */
-        #loading-screen {
+        /* === 搜索结果弹窗 (Modal) === */
+        #search-modal {
+            display: none; /* 默认隐藏 */
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(3px);
         }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #e2e8f0;
-            border-top-color: var(--primary); border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin-bottom: 15px;
+        .modal-content {
+            background: white; width: 85%; max-width: 320px;
+            border-radius: 16px; padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-word { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 10px; font-family: 'Georgia', serif;}
+        .modal-def { font-size: 16px; color: #475569; line-height: 1.5; margin-bottom: 20px; }
+        .modal-btn { background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+
+        /* 加载界面 */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .error-msg { color: var(--error); text-align: center; padding: 20px; line-height: 1.6; }
     </style>
 </head>
 <body>
+
+    <!-- 1. 搜索结果弹窗 -->
+    <div id="search-modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modal-word" class="modal-word">Word</div>
+            <div id="modal-def" class="modal-def">Definition</div>
+            <button class="modal-btn" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
 
     <!-- 加载界面 -->
     <div id="loading-screen">
@@ -187,22 +204,34 @@
         <div id="loading-text" style="color:#64748b; font-size:14px;">正在加载题库...</div>
     </div>
 
-    <!-- 顶部固定 -->
+    <!-- 2. 顶部功能区 (新布局) -->
     <header>
-        <div class="title">TOEFL Match</div>
-        <div class="stats">剩余: <span id="left-count">--</span></div>
+        <!-- 左上：错误率 -->
+        <div class="stat-box">
+            <span class="stat-icon">❌</span>
+            <span id="error-rate-display">0/0</span>
+        </div>
+
+        <!-- 中间：查找栏 -->
+        <div class="search-container">
+            <input type="search" id="search-input" placeholder="查词 (Enter)..." autocomplete="off">
+        </div>
+
+        <!-- 右上：计时器 -->
+        <div class="timer-box">
+            ⏱ <span id="timer-display">00:00</span>
+        </div>
+
+        <!-- 底部进度条 -->
         <div id="progress-container"><div id="progress-bar"></div></div>
     </header>
 
-    <!-- 中间滚动 -->
     <main>
         <div class="grid-container">
-            <!-- 左列：英文 -->
             <div class="column">
                 <div class="col-header">Word</div>
                 <div id="col-en" style="display:grid; gap:10px;"></div>
             </div>
-            <!-- 右列：中文 -->
             <div class="column">
                 <div class="col-header">Meaning</div>
                 <div id="col-zh" style="display:grid; gap:10px;"></div>
@@ -210,16 +239,12 @@
         </div>
     </main>
 
-    <!-- 底部固定 -->
     <footer>
         <button class="btn" id="next-btn" onclick="nextLevel()">下一组 (Next Level)</button>
     </footer>
 
     <script>
-        // ============================================================
-        // API 设置
-        // ============================================================
-        const API_URL = "https://api.npoint.io/ef9cd015292eaa3ac09b"; 
+        const API_URL = "https://api.npoint.io/702ced1a5f26783b1954"; 
 
         let fullLibrary = []; 
         let gamePool = [];    
@@ -228,30 +253,25 @@
         let selectedEn = null, selectedZh = null;
         let isProcessing = false; 
 
-        // 1. 程序入口
+        // === 新增统计变量 ===
+        let totalAttempts = 0; // 总尝试次数
+        let totalErrors = 0;   // 错误次数
+        let timerInterval = null; // 计时器句柄
+        let secondsElapsed = 0;   // 经过的秒数
+
+        // 1. 初始化
         async function init() {
             const loadingText = document.getElementById('loading-text');
-            const spinner = document.querySelector('.spinner');
-            
             try {
                 const res = await fetch(API_URL);
-                if(!res.ok) throw new Error("网络异常: " + res.status);
-                
+                if(!res.ok) throw new Error("API Error");
                 const data = await res.json();
                 
-                // 数据智能适配
+                // 数据适配
                 let dataArray = [];
-                if (Array.isArray(data)) {
-                    dataArray = data;
-                } else if (typeof data === 'object' && data !== null) {
-                    dataArray = data.words || data.list || data.data || Object.values(data);
-                }
-
-                if (!Array.isArray(dataArray) || dataArray.length === 0) {
-                    throw new Error("无法识别数据格式");
-                }
-
-                // 数据清洗
+                if (Array.isArray(data)) dataArray = data;
+                else if (typeof data === 'object') dataArray = data.words || data.list || Object.values(data);
+                
                 fullLibrary = dataArray.map(item => {
                     if(Array.isArray(item)) return { en: item[0], zh: item[1] };
                     if(item.en && item.zh) return item;
@@ -259,12 +279,16 @@
                 }).filter(i => i);
 
                 document.getElementById('loading-screen').style.display = 'none';
+                
+                // 绑定搜索事件
+                document.getElementById('search-input').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') handleSearch(this.value);
+                });
+
                 startGame();
 
             } catch (err) {
-                console.error(err);
-                spinner.style.display = 'none';
-                loadingText.innerHTML = `<div class="error-msg">加载失败<br>${err.message}<br><br><u onclick="location.reload()">点击重试</u></div>`;
+                loadingText.innerHTML = `Error: ${err.message} <u onclick="location.reload()">Retry</u>`;
             }
         }
 
@@ -272,20 +296,67 @@
             gamePool = [...fullLibrary];
             shuffle(gamePool);
             updateStats();
+            startTimer(); // 启动计时器
             loadLevel();
         }
 
+        // === 2. 计时器逻辑 ===
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            secondsElapsed = 0;
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                const s = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // === 3. 查词逻辑 ===
+        function handleSearch(query) {
+            query = query.trim().toLowerCase();
+            if (!query) return;
+
+            // 在整个库中查找 (精确匹配 或 模糊匹配)
+            const result = fullLibrary.find(w => w.en.toLowerCase() === query);
+            
+            if (result) {
+                showModal(result.en, result.zh);
+            } else {
+                // 尝试模糊搜索
+                const fuzzy = fullLibrary.find(w => w.en.toLowerCase().includes(query));
+                if (fuzzy) {
+                    showModal(fuzzy.en + " (?)", fuzzy.zh + "\n(未找到精确匹配，显示最接近词汇)");
+                } else {
+                    showModal("Not Found", "题库中未找到该单词");
+                }
+            }
+            // 清空输入框并失去焦点（收起键盘）
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-input').blur();
+        }
+
+        function showModal(word, def) {
+            document.getElementById('modal-word').innerText = word;
+            document.getElementById('modal-def').innerText = def;
+            document.getElementById('search-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('search-modal').style.display = 'none';
+        }
+
+        // === 游戏逻辑 ===
         function loadLevel() {
             document.getElementById('next-btn').style.display = 'none';
             matches = 0;
             selectedEn = null; selectedZh = null;
 
             if (gamePool.length === 0) {
-                alert("通关！所有单词已完成！");
+                alert("通关！");
                 return;
             }
 
-            // 每次取 8 个 (手机屏幕通常放8个刚好)
             const count = Math.min(8, gamePool.length);
             currentRound = gamePool.splice(0, count);
             updateStats();
@@ -306,8 +377,7 @@
 
         function createCard(data) {
             const div = document.createElement('div');
-            // 区别中英文样式
-            div.className = `card ${data.type}`; 
+            div.className = `card ${data.type}`;
             div.innerText = data.text;
             div.dataset.id = data.id;
             div.dataset.type = data.type;
@@ -317,8 +387,6 @@
 
         function handleTap(el) {
             if (isProcessing || el.classList.contains('matched') || el.classList.contains('selected')) return;
-
-            // 震动反馈
             if (navigator.vibrate) navigator.vibrate(5);
 
             el.classList.add('selected');
@@ -338,17 +406,20 @@
             isProcessing = true;
             const isMatch = selectedEn.dataset.id === selectedZh.dataset.id;
 
+            // === 4. 更新统计数据 ===
+            totalAttempts++; 
+            if (!isMatch) totalErrors++;
+            updateErrorStats();
+
             if (isMatch) {
                 matches++;
                 selectedEn.classList.replace('selected', 'matched');
                 selectedZh.classList.replace('selected', 'matched');
-                
                 selectedEn = null; selectedZh = null;
                 isProcessing = false;
 
                 if (matches === currentRound.length) {
                     document.getElementById('next-btn').style.display = 'block';
-                    // 平滑滚动到底部
                     setTimeout(() => {
                         document.querySelector('main').scrollTo({ top: 9999, behavior: 'smooth' });
                     }, 200);
@@ -356,7 +427,7 @@
             } else {
                 selectedEn.classList.add('wrong');
                 selectedZh.classList.add('wrong');
-                if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+                if (navigator.vibrate) navigator.vibrate(50);
 
                 setTimeout(() => {
                     selectedEn.classList.remove('selected', 'wrong');
@@ -367,13 +438,20 @@
             }
         }
 
+        function updateErrorStats() {
+            // 显示格式：错误/总数
+            // 如果有错误，用红色显示，否则默认色
+            const el = document.getElementById('error-rate-display');
+            el.innerText = `${totalErrors}/${totalAttempts}`;
+            if (totalErrors > 0) el.classList.add('error-text');
+        }
+
         window.nextLevel = function() {
             loadLevel();
             document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function updateStats() {
-            document.getElementById('left-count').innerText = gamePool.length;
             const total = fullLibrary.length;
             const pct = total > 0 ? ((total - gamePool.length) / total) * 100 : 0;
             document.getElementById('progress-bar').style.width = `${pct}%`;
@@ -388,4 +466,3 @@
     </script>
 </body>
 </html>
-
