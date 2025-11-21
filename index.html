@@ -2,9 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 核心：移动端适配 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>托福词汇特训 Pro (1121升级版)</title>
+    <title>托福词汇特训 Pro (专业反馈版)</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -21,116 +20,48 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            height: 100dvh; 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            user-select: none;
+            margin: 0; padding: 0; height: 100dvh; 
+            display: flex; flex-direction: column; overflow: hidden; user-select: none;
         }
 
-        /* === 顶部仪表盘 === */
+        /* Header Styles */
         header {
-            height: var(--header-height);
-            background: rgba(255, 255, 255, 0.98);
-            padding: 0 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-            z-index: 50;
-            flex-shrink: 0;
-            gap: 6px;
+            height: var(--header-height); background: rgba(255, 255, 255, 0.98);
+            padding: 0 10px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05); z-index: 50; flex-shrink: 0; gap: 6px;
         }
-
-        /* 1. 左侧错误率 */
-        .stat-box {
-            font-size: 12px; font-weight: 600; color: #64748b;
-            display: flex; align-items: center; min-width: 40px;
-        }
+        .stat-box { font-size: 12px; font-weight: 600; color: #64748b; display: flex; align-items: center; min-width: 40px; }
         .error-text { color: var(--error); }
-
-        /* 2. 中间搜索栏 */
+        
         .search-form {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 2px 4px 2px 10px;
-            transition: all 0.2s;
-            max-width: 45%; /* 防止挤压两侧 */
+            flex: 1; display: flex; align-items: center; background: #f8fafc;
+            border: 1px solid #e2e8f0; border-radius: 20px; padding: 2px 4px 2px 10px;
+            transition: all 0.2s; max-width: 45%;
         }
-        .search-form:focus-within {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
-        }
-        #search-input {
-            border: none; background: transparent; width: 100%;
-            font-size: 13px; color: #334155; padding: 6px 0;
-        }
+        .search-form:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+        #search-input { border: none; background: transparent; width: 100%; font-size: 13px; color: #334155; padding: 6px 0; }
         .search-btn {
-            background: var(--primary); color: white; border: none;
-            border-radius: 50%; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; flex-shrink: 0; font-size: 14px; margin-left: 4px;
+            background: var(--primary); color: white; border: none; border-radius: 50%; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 14px; margin-left: 4px;
         }
 
-        /* 3. 右侧信息区 (总数 + 时间) */
-        .info-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: center;
-            font-size: 11px;
-            min-width: 70px;
-            line-height: 1.4;
-        }
-
-        /* 总数显示样式 */
-        .total-count-box {
-            color: #334155;
-        }
-        .total-num {
-            font-weight: 800;
-            color: var(--primary);
-            font-size: 12px;
-        }
-
-        /* 计时器样式 */
-        .timer-box {
-            font-weight: 600; color: #64748b;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* 进度条 */
-        #progress-container {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: transparent;
-        }
+        .info-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; font-size: 11px; min-width: 70px; line-height: 1.4; }
+        .total-num { font-weight: 800; color: var(--primary); font-size: 12px; }
+        .timer-box { font-weight: 600; color: #64748b; font-variant-numeric: tabular-nums; }
+        
+        #progress-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: transparent; }
         #progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
 
-        /* === 游戏区域 === */
-        main {
-            flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .grid-container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            max-width: 600px; margin: 0 auto;
-        }
-        .col-header {
-            text-align: center; color: #94a3b8; font-size: 12px; 
-            text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;
-        }
+        /* Main & Grid */
+        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; margin: 0 auto; }
+        .col-header { text-align: center; color: #94a3b8; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
 
         .card {
             background: var(--card-bg); border-radius: 10px; height: 90px;
             display: flex; align-items: center; justify-content: center; text-align: center;
-            padding: 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border: 2px solid transparent; transition: all 0.15s ease; cursor: pointer; overflow: hidden;
+            padding: 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 2px solid transparent;
+            transition: all 0.15s ease; cursor: pointer; overflow: hidden;
         }
         .card.en { font-size: 16px; font-weight: 600; color: #1e293b; font-family: 'Georgia', serif; }
         .card.zh { font-size: 13px; color: #475569; line-height: 1.3; }
@@ -140,7 +71,7 @@
         .card.wrong { background-color: #fef2f2; border-color: var(--error); color: var(--error); animation: shake 0.4s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-        /* === 底部按钮 === */
+        /* Footer & Buttons */
         footer {
             flex-shrink: 0; background: linear-gradient(to top, #f1f5f9 85%, rgba(241, 245, 249, 0));
             padding: 10px 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -151,8 +82,12 @@
             border-radius: 12px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); display: none; cursor: pointer;
         }
 
-        /* === 弹窗 === */
-        #search-modal {
+        /* 反馈入口 */
+        .feedback-trigger { text-align: center; margin-top: 30px; padding-bottom: 10px; }
+        .feedback-link { font-size: 12px; color: #94a3b8; text-decoration: none; cursor: pointer; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
+        
+        /* 弹窗通用 */
+        .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;
             backdrop-filter: blur(3px);
@@ -163,9 +98,23 @@
             animation: popIn 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* 搜索弹窗 */
         .modal-word { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 10px; font-family: 'Georgia', serif;}
         .modal-def { font-size: 16px; color: #475569; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
-        .modal-btn { background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+        
+        /* 反馈弹窗 */
+        .star-rating { font-size: 28px; color: #e2e8f0; margin-bottom: 15px; cursor: pointer; }
+        .star-rating span.active { color: #fbbf24; }
+        #feedback-text { 
+            width: 100%; height: 80px; border: 1px solid #e2e8f0; border-radius: 8px; 
+            padding: 10px; font-size: 14px; margin-bottom: 15px; resize: none; font-family: inherit;
+        }
+        #feedback-text:focus { border-color: var(--primary); }
+        
+        .modal-btn { background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 5px;}
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
 
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
@@ -174,41 +123,49 @@
 </head>
 <body>
 
-    <div id="search-modal" onclick="closeModal()">
+    <!-- 1. 搜索弹窗 -->
+    <div id="search-modal" class="modal-overlay" onclick="closeModal('search-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modal-word" class="modal-word"></div>
             <div id="modal-def" class="modal-def"></div>
-            <button class="modal-btn" onclick="closeModal()">关闭</button>
+            <button class="modal-btn" onclick="closeModal('search-modal')">关闭</button>
         </div>
     </div>
 
+    <!-- 2. 反馈弹窗 (基于 Formspree) -->
+    <div id="feedback-modal" class="modal-overlay" onclick="closeModal('feedback-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="margin:0 0 15px 0; color:#334155;">📝 留言评价</h3>
+            
+            <!-- 星星评分 -->
+            <div class="star-rating" id="star-container">
+                <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
+            </div>
+            
+            <textarea id="feedback-text" name="message" placeholder="请写下您的建议或Bug反馈..."></textarea>
+            
+            <!-- 这里的按钮触发 AJAX 提交 -->
+            <button id="submit-fb-btn" class="modal-btn btn-primary" onclick="submitFeedback()">提交反馈</button>
+            <button class="modal-btn" style="margin-top:8px; background:transparent;" onclick="closeModal('feedback-modal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 加载 -->
     <div id="loading-screen">
         <div class="spinner"></div>
         <div id="loading-text" style="color:#64748b; font-size:14px;">正在加载题库...</div>
     </div>
 
     <header>
-        <!-- 左侧：错误率 -->
-        <div class="stat-box">
-            ❌ <span id="error-rate-display" style="margin-left:4px">0/0</span>
-        </div>
-
-        <!-- 中间：搜索 -->
+        <div class="stat-box">❌ <span id="error-rate-display" style="margin-left:4px">0/0</span></div>
         <form class="search-form" action="javascript:void(0);" onsubmit="submitSearch()">
-            <input type="search" id="search-input" placeholder="输入你想查找的单词..." autocomplete="off">
+            <input type="search" id="search-input" placeholder="请输入你要查找的单词..." autocomplete="off">
             <button type="submit" class="search-btn">🔍</button>
         </form>
-
-        <!-- 右侧：信息区 (总数 + 时间) -->
         <div class="info-right">
-            <div class="total-count-box">
-                Total: <span id="total-count-display" class="total-num">--</span>
-            </div>
-            <div class="timer-box">
-                ⏱ <span id="timer-display">00:00</span>
-            </div>
+            <div class="total-count-box">Total: <span id="total-count-display" class="total-num">--</span></div>
+            <div class="timer-box">⏱ <span id="timer-display">00:00</span></div>
         </div>
-        
         <div id="progress-container"><div id="progress-bar"></div></div>
     </header>
 
@@ -223,6 +180,11 @@
                 <div id="col-zh" style="display:grid; gap:10px;"></div>
             </div>
         </div>
+
+        <!-- 底部反馈入口 -->
+        <div class="feedback-trigger">
+            <span class="feedback-link" onclick="openFeedback()">✍️ 提交反馈 / 评价</span>
+        </div>
     </main>
 
     <footer>
@@ -231,66 +193,50 @@
 
     <script>
         // ==================================================================
-        // 替换为你的完整 JSON 地址
+        // 核心配置区
         // ==================================================================
-        const API_URL = "https://api.npoint.io/ef9cd015292eaa3ac09b"; 
+        const WORD_API = "https://api.npoint.io/ef9cd015292eaa3ac09b"; 
+        
+        // ★★★ 请将下方 'YOUR_FORM_ID' 替换为你在 Formspree 获取的 ID ★★★
+        // 例如: const FORMSPREE_ENDPOINT = "https://formspree.io/f/xxyyzzaa";
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xjklqldr";
 
-        let fullLibrary = []; 
-        let gamePool = [];    
-        let currentRound = []; 
-        let matches = 0;
-        let selectedEn = null, selectedZh = null;
-        let isProcessing = false; 
+        // ==================================================================
 
-        let totalAttempts = 0; 
-        let totalErrors = 0;
-        let timerInterval = null;
-        let secondsElapsed = 0;
+        let fullLibrary = []; let gamePool = []; let currentRound = []; 
+        let matches = 0; let selectedEn = null, selectedZh = null; let isProcessing = false; 
+        let totalAttempts = 0; let totalErrors = 0;
+        let timerInterval = null; let secondsElapsed = 0;
+
+        // 反馈相关变量
+        let currentRating = 5;
 
         async function init() {
             const loadingText = document.getElementById('loading-text');
             try {
                 loadingText.innerText = "正在下载数据...";
-                const res = await fetch(API_URL);
+                const res = await fetch(WORD_API);
                 if(!res.ok) throw new Error("网络请求失败");
-                
-                // 尝试解析 JSON
-                let data;
-                try {
-                    data = await res.json();
-                } catch(e) {
-                    throw new Error("JSON 格式错误，请检查文件内容");
-                }
+                let data = await res.json();
                 
                 let dataArray = [];
                 if (Array.isArray(data)) dataArray = data;
                 else if (typeof data === 'object') dataArray = data.words || data.list || Object.values(data);
                 
-                // === 核心修复：数据清洗逻辑放宽 ===
-                // 之前: if(en && zh) -> 如果zh为空，单词直接被扔掉 (导致少了几千个)
-                // 现在: if(en) -> 只要有英文，就保留。如果没有中文，填 "暂无释义"
                 fullLibrary = dataArray.map(item => {
                     let en, zh;
-                    // 兼容数组格式 ["apple", "苹果"] 和 对象格式 {en:"apple", zh:"苹果"}
                     if(Array.isArray(item)) { en = item[0]; zh = item[1]; }
                     else { en = item.en; zh = item.zh; }
-                    
-                    // 只要有英文单词，就视为有效数据
                     if(en) {
-                        return { 
-                            en: String(en).trim(), 
-                            zh: zh ? String(zh).trim() : "暂无释义" // 自动补全缺失的中文
-                        };
+                        return { en: String(en).trim(), zh: zh ? String(zh).trim() : "暂无释义" };
                     }
                     return null;
-                }).filter(i => i); // 过滤掉完全为空的行
+                }).filter(i => i);
 
-                // 更新 UI 上的总数
                 document.getElementById('total-count-display').innerText = fullLibrary.length;
-                
-                console.log(`加载成功: ${fullLibrary.length} 个单词`);
                 document.getElementById('loading-screen').style.display = 'none';
                 
+                initStarRating(); 
                 startGame();
 
             } catch (err) {
@@ -317,6 +263,81 @@
             }, 1000);
         }
 
+        // === 核心修改：使用 Formspree 提交反馈 ===
+        function openFeedback() {
+            // 检查用户是否填了 Formspree ID
+            if (FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")) {
+                alert("请先在代码中配置 Formspree ID！");
+                return;
+            }
+            document.getElementById('feedback-modal').style.display = 'flex';
+            document.getElementById('feedback-text').focus();
+        }
+
+        function initStarRating() {
+            const stars = document.querySelectorAll('#star-container span');
+            stars.forEach(star => {
+                star.onclick = function() {
+                    currentRating = parseInt(this.dataset.val);
+                    updateStars();
+                }
+            });
+            updateStars();
+        }
+
+        function updateStars() {
+            const stars = document.querySelectorAll('#star-container span');
+            stars.forEach(s => {
+                if(parseInt(s.dataset.val) <= currentRating) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        }
+
+        async function submitFeedback() {
+            const text = document.getElementById('feedback-text').value.trim();
+            const btn = document.getElementById('submit-fb-btn');
+            
+            if(!text) { alert("请写点什么吧~"); return; }
+
+            btn.disabled = true;
+            btn.innerText = "正在发送...";
+
+            // 构造要发送的数据
+            const feedbackData = {
+                rating: currentRating + " 星", // 评分
+                message: text,                 // 留言内容
+                device: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'Mobile' : 'PC',
+                date: new Date().toLocaleString()
+            };
+
+            try {
+                // 发送到 Formspree
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    body: JSON.stringify(feedbackData),
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert("感谢您的反馈！我们已收到邮件通知。");
+                    document.getElementById('feedback-text').value = '';
+                    closeModal('feedback-modal');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "提交失败");
+                }
+            } catch (err) {
+                alert("发送失败: " + err.message);
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "提交反馈";
+            }
+        }
+
         // === 搜索功能 ===
         function submitSearch() {
             const input = document.getElementById('search-input');
@@ -329,47 +350,36 @@
             query = query.trim().toLowerCase();
             if (!query) return;
 
-            // 1. 精确查找 (忽略大小写)
             let result = fullLibrary.find(w => w.en.toLowerCase() === query);
-            
-            // 2. 前缀查找
-            if (!result) {
-                result = fullLibrary.find(w => w.en.toLowerCase().startsWith(query));
-            }
-            
-            // 3. 模糊包含查找
-            if (!result) {
-                result = fullLibrary.find(w => w.en.toLowerCase().includes(query));
-            }
+            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().startsWith(query));
+            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().includes(query));
 
             if (result) {
-                showModal(result.en, result.zh);
+                showModal('search-modal', result.en, result.zh);
             } else {
-                showModal("未找到", `在 ${fullLibrary.length} 个单词中未找到 "${query}"。\n请检查拼写或确认 JSON 文件是否包含该词。`);
+                showModal('search-modal', "未找到", `在 ${fullLibrary.length} 个单词中未找到 "${query}"。`);
             }
             document.getElementById('search-input').value = '';
         }
 
-        function showModal(word, def) {
-            document.getElementById('modal-word').innerText = word;
-            document.getElementById('modal-def').innerText = def;
-            document.getElementById('search-modal').style.display = 'flex';
+        function showModal(id, word, def) {
+            if(id === 'search-modal') {
+                document.getElementById('modal-word').innerText = word;
+                document.getElementById('modal-def').innerText = def;
+            }
+            document.getElementById(id).style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('search-modal').style.display = 'none';
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
 
         // === 游戏逻辑 ===
         function loadLevel() {
             document.getElementById('next-btn').style.display = 'none';
-            matches = 0;
-            selectedEn = null; selectedZh = null;
+            matches = 0; selectedEn = null; selectedZh = null;
 
-            if (gamePool.length === 0) {
-                alert("恭喜！所有单词已完成！");
-                return;
-            }
+            if (gamePool.length === 0) { alert("恭喜！所有单词已完成！"); return; }
 
             const count = Math.min(8, gamePool.length);
             currentRound = gamePool.splice(0, count);
@@ -382,8 +392,7 @@
             let listEn = currentRound.map(i => ({id: i.en, text: i.en, type: 'en'}));
             let listZh = currentRound.map(i => ({id: i.en, text: i.zh, type: 'zh'}));
             
-            shuffle(listEn);
-            shuffle(listZh);
+            shuffle(listEn); shuffle(listZh);
 
             listEn.forEach(d => colEn.appendChild(createCard(d)));
             listZh.forEach(d => colZh.appendChild(createCard(d)));
@@ -392,88 +401,3 @@
         function createCard(data) {
             const div = document.createElement('div');
             div.className = `card ${data.type}`;
-            div.innerText = data.text;
-            div.dataset.id = data.id;
-            div.dataset.type = data.type;
-            div.onclick = () => handleTap(div);
-            return div;
-        }
-
-        function handleTap(el) {
-            if (isProcessing || el.classList.contains('matched') || el.classList.contains('selected')) return;
-            if (navigator.vibrate) navigator.vibrate(5);
-
-            el.classList.add('selected');
-            
-            if (el.dataset.type === 'en') {
-                if (selectedEn) selectedEn.classList.remove('selected');
-                selectedEn = el;
-            } else {
-                if (selectedZh) selectedZh.classList.remove('selected');
-                selectedZh = el;
-            }
-
-            if (selectedEn && selectedZh) checkMatch();
-        }
-
-        function checkMatch() {
-            isProcessing = true;
-            const isMatch = selectedEn.dataset.id === selectedZh.dataset.id;
-            totalAttempts++; 
-            if (!isMatch) totalErrors++;
-            updateErrorStats();
-
-            if (isMatch) {
-                matches++;
-                selectedEn.classList.replace('selected', 'matched');
-                selectedZh.classList.replace('selected', 'matched');
-                selectedEn = null; selectedZh = null;
-                isProcessing = false;
-
-                if (matches === currentRound.length) {
-                    document.getElementById('next-btn').style.display = 'block';
-                    setTimeout(() => {
-                        document.querySelector('main').scrollTo({ top: 9999, behavior: 'smooth' });
-                    }, 200);
-                }
-            } else {
-                selectedEn.classList.add('wrong');
-                selectedZh.classList.add('wrong');
-                if (navigator.vibrate) navigator.vibrate(50);
-
-                setTimeout(() => {
-                    selectedEn.classList.remove('selected', 'wrong');
-                    selectedZh.classList.remove('selected', 'wrong');
-                    selectedEn = null; selectedZh = null;
-                    isProcessing = false;
-                }, 400);
-            }
-        }
-
-        function updateErrorStats() {
-            const el = document.getElementById('error-rate-display');
-            el.innerText = `${totalErrors}/${totalAttempts}`;
-            if (totalErrors > 0) el.classList.add('error-text');
-        }
-
-        window.nextLevel = function() {
-            loadLevel();
-            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function updateStats() {
-            const total = fullLibrary.length;
-            const pct = total > 0 ? ((total - gamePool.length) / total) * 100 : 0;
-            document.getElementById('progress-bar').style.width = `${pct}%`;
-        }
-
-        function shuffle(arr) {
-            arr.sort(() => Math.random() - 0.5);
-        }
-
-        init();
-    </script>
-</body>
-</html>
-
-
