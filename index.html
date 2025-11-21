@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>托福词汇特训 Pro (专业反馈版)</title>
+    <title>托福词汇特训 Pro (语音跟读版)</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -24,7 +24,7 @@
             display: flex; flex-direction: column; overflow: hidden; user-select: none;
         }
 
-        /* Header Styles */
+        /* Header */
         header {
             height: var(--header-height); background: rgba(255, 255, 255, 0.98);
             padding: 0 10px; display: flex; align-items: center; justify-content: space-between;
@@ -52,7 +52,7 @@
         #progress-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: transparent; }
         #progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
 
-        /* Main & Grid */
+        /* Main */
         main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; margin: 0 auto; }
         .col-header { text-align: center; color: #94a3b8; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
@@ -61,7 +61,7 @@
             background: var(--card-bg); border-radius: 10px; height: 90px;
             display: flex; align-items: center; justify-content: center; text-align: center;
             padding: 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 2px solid transparent;
-            transition: all 0.15s ease; cursor: pointer; overflow: hidden;
+            transition: all 0.15s ease; cursor: pointer; overflow: hidden; position: relative;
         }
         .card.en { font-size: 16px; font-weight: 600; color: #1e293b; font-family: 'Georgia', serif; }
         .card.zh { font-size: 13px; color: #475569; line-height: 1.3; }
@@ -71,7 +71,7 @@
         .card.wrong { background-color: #fef2f2; border-color: var(--error); color: var(--error); animation: shake 0.4s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-        /* Footer & Buttons */
+        /* Footer */
         footer {
             flex-shrink: 0; background: linear-gradient(to top, #f1f5f9 85%, rgba(241, 245, 249, 0));
             padding: 10px 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -82,11 +82,10 @@
             border-radius: 12px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); display: none; cursor: pointer;
         }
 
-        /* 反馈入口 */
         .feedback-trigger { text-align: center; margin-top: 30px; padding-bottom: 10px; }
         .feedback-link { font-size: 12px; color: #94a3b8; text-decoration: none; cursor: pointer; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
         
-        /* 弹窗通用 */
+        /* Modal Overlay */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;
@@ -99,22 +98,37 @@
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        /* 搜索弹窗 */
-        .modal-word { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 10px; font-family: 'Georgia', serif;}
+        /* === 学习卡片 (含语音) === */
+        .modal-word { font-size: 28px; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-family: 'Georgia', serif;}
         .modal-def { font-size: 16px; color: #475569; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
         
-        /* 反馈弹窗 */
+        .audio-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .audio-btn {
+            width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        /* 播放按钮 */
+        .btn-listen { background: #e0e7ff; color: var(--primary); }
+        .btn-listen:active { background: #c7d2fe; transform: scale(0.95); }
+        
+        /* 录音按钮 */
+        .btn-speak { background: #fce7f3; color: #db2777; position: relative;}
+        .btn-speak.listening { background: #db2777; color: white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(219, 39, 119, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(219, 39, 119, 0); } 100% { box-shadow: 0 0 0 0 rgba(219, 39, 119, 0); } }
+
+        .speak-feedback { height: 20px; font-size: 13px; color: #94a3b8; font-weight: 600; margin-bottom: 10px; }
+        .speak-success { color: var(--success); }
+        .speak-fail { color: var(--error); }
+
+        .modal-close-btn { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+
+        /* 反馈弹窗样式 */
         .star-rating { font-size: 28px; color: #e2e8f0; margin-bottom: 15px; cursor: pointer; }
         .star-rating span.active { color: #fbbf24; }
-        #feedback-text { 
-            width: 100%; height: 80px; border: 1px solid #e2e8f0; border-radius: 8px; 
-            padding: 10px; font-size: 14px; margin-bottom: 15px; resize: none; font-family: inherit;
-        }
-        #feedback-text:focus { border-color: var(--primary); }
-        
-        .modal-btn { background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 5px;}
+        #feedback-text { width: 100%; height: 80px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 14px; margin-bottom: 15px; resize: none; font-family: inherit; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
+        .btn-primary:disabled { background: #94a3b8; opacity: 0.7; }
 
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
@@ -123,30 +137,39 @@
 </head>
 <body>
 
-    <!-- 1. 搜索弹窗 -->
-    <div id="search-modal" class="modal-overlay" onclick="closeModal('search-modal')">
+    <!-- 1. 单词学习弹窗 (查词/跟读) -->
+    <div id="word-modal" class="modal-overlay" onclick="closeModal('word-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="modal-word" class="modal-word"></div>
-            <div id="modal-def" class="modal-def"></div>
-            <button class="modal-btn" onclick="closeModal('search-modal')">关闭</button>
+            <div id="modal-word" class="modal-word">Word</div>
+            <div id="modal-def" class="modal-def">Definition</div>
+            
+            <!-- 语音控制区 -->
+            <div class="speak-feedback" id="speak-msg">点击麦克风开始跟读</div>
+            <div class="audio-controls">
+                <!-- 朗读按钮 -->
+                <button class="audio-btn btn-listen" onclick="playAudio()" title="听发音">
+                    🔊
+                </button>
+                <!-- 跟读按钮 -->
+                <button class="audio-btn btn-speak" id="mic-btn" onclick="toggleSpeech()" title="语音跟读">
+                    🎙️
+                </button>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeModal('word-modal')">关闭</button>
         </div>
     </div>
 
-    <!-- 2. 反馈弹窗 (基于 Formspree) -->
+    <!-- 2. 反馈弹窗 -->
     <div id="feedback-modal" class="modal-overlay" onclick="closeModal('feedback-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="margin:0 0 15px 0; color:#334155;">📝 留言评价</h3>
-            
-            <!-- 星星评分 -->
             <div class="star-rating" id="star-container">
                 <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
             </div>
-            
             <textarea id="feedback-text" name="message" placeholder="请写下您的建议或Bug反馈..."></textarea>
-            
-            <!-- 这里的按钮触发 AJAX 提交 -->
-            <button id="submit-fb-btn" class="modal-btn btn-primary" onclick="submitFeedback()">提交反馈</button>
-            <button class="modal-btn" style="margin-top:8px; background:transparent;" onclick="closeModal('feedback-modal')">取消</button>
+            <button id="submit-fb-btn" class="modal-close-btn btn-primary" onclick="submitFeedback()">提交反馈</button>
+            <button class="modal-close-btn" style="margin-top:8px; background:transparent;" onclick="closeModal('feedback-modal')">取消</button>
         </div>
     </div>
 
@@ -159,7 +182,7 @@
     <header>
         <div class="stat-box">❌ <span id="error-rate-display" style="margin-left:4px">0/0</span></div>
         <form class="search-form" action="javascript:void(0);" onsubmit="submitSearch()">
-            <input type="search" id="search-input" placeholder="搜词..." autocomplete="off">
+            <input type="search" id="search-input" placeholder="搜词 (或在网格长按)..." autocomplete="off">
             <button type="submit" class="search-btn">🔍</button>
         </form>
         <div class="info-right">
@@ -180,8 +203,6 @@
                 <div id="col-zh" style="display:grid; gap:10px;"></div>
             </div>
         </div>
-
-        <!-- 底部反馈入口 -->
         <div class="feedback-trigger">
             <span class="feedback-link" onclick="openFeedback()">✍️ 提交反馈 / 评价</span>
         </div>
@@ -192,24 +213,22 @@
     </footer>
 
     <script>
-        // ==================================================================
-        // 核心配置区
-        // ==================================================================
+        // ================= CONFIG =================
         const WORD_API = "https://api.npoint.io/ef9cd015292eaa3ac09b"; 
-        
-        // ★★★ 请将下方 'YOUR_FORM_ID' 替换为你在 Formspree 获取的 ID ★★★
-        // 例如: const FORMSPREE_ENDPOINT = "https://formspree.io/f/xxyyzzaa";
-        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xjklqldr";
-
-        // ==================================================================
+        // 替换你的 Formspree ID
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xjklqldr"; 
+        // ==========================================
 
         let fullLibrary = []; let gamePool = []; let currentRound = []; 
         let matches = 0; let selectedEn = null, selectedZh = null; let isProcessing = false; 
         let totalAttempts = 0; let totalErrors = 0;
         let timerInterval = null; let secondsElapsed = 0;
-
-        // 反馈相关变量
         let currentRating = 5;
+
+        // 语音相关变量
+        let currentTargetWord = "";
+        let recognition = null;
+        let isListening = false;
 
         async function init() {
             const loadingText = document.getElementById('loading-text');
@@ -227,16 +246,15 @@
                     let en, zh;
                     if(Array.isArray(item)) { en = item[0]; zh = item[1]; }
                     else { en = item.en; zh = item.zh; }
-                    if(en) {
-                        return { en: String(en).trim(), zh: zh ? String(zh).trim() : "暂无释义" };
-                    }
+                    if(en) return { en: String(en).trim(), zh: zh ? String(zh).trim() : "暂无释义" };
                     return null;
                 }).filter(i => i);
 
                 document.getElementById('total-count-display').innerText = fullLibrary.length;
                 document.getElementById('loading-screen').style.display = 'none';
                 
-                initStarRating(); 
+                initStarRating();
+                initSpeech(); // 初始化语音功能
                 startGame();
 
             } catch (err) {
@@ -263,157 +281,178 @@
             }, 1000);
         }
 
-        // === 核心修改：使用 Formspree 提交反馈 ===
-        function openFeedback() {
-            // 检查用户是否填了 Formspree ID
-            if (FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")) {
-                alert("请先在代码中配置 Formspree ID！");
+        // ==========================================
+        // 核心：语音跟读 & 朗读功能
+        // ==========================================
+        function initSpeech() {
+            // 1. 检查是否支持语音识别
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'en-US'; // 设定为美式英语
+                recognition.continuous = false; // 说完一句就停
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    updateMicUI(true);
+                    document.getElementById('speak-msg').innerText = "正在听...请朗读单词";
+                    document.getElementById('speak-msg').className = "speak-feedback";
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    updateMicUI(false);
+                    if(document.getElementById('speak-msg').innerText.includes("正在听")) {
+                         document.getElementById('speak-msg').innerText = "未检测到声音，请重试";
+                    }
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript.toLowerCase();
+                    checkPronunciation(transcript);
+                };
+
+                recognition.onerror = (event) => {
+                    isListening = false;
+                    updateMicUI(false);
+                    console.error(event.error);
+                    document.getElementById('speak-msg').innerText = "无法识别，请检查麦克风权限";
+                };
+            } else {
+                console.warn("当前浏览器不支持语音识别");
+            }
+        }
+
+        // 播放读音 (TTS)
+        function playAudio() {
+            if (!currentTargetWord) return;
+            // 取消之前的朗读
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(currentTargetWord);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9; // 稍微慢一点点，清晰
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 切换跟读 (STT)
+        function toggleSpeech() {
+            if (!recognition) {
+                alert("抱歉，您的浏览器不支持语音跟读功能 (推荐使用 Chrome / Android)。iOS 用户请尝试使用 Safari 最新版并授予麦克风权限。");
                 return;
             }
-            document.getElementById('feedback-modal').style.display = 'flex';
-            document.getElementById('feedback-text').focus();
-        }
-
-        function initStarRating() {
-            const stars = document.querySelectorAll('#star-container span');
-            stars.forEach(star => {
-                star.onclick = function() {
-                    currentRating = parseInt(this.dataset.val);
-                    updateStars();
-                }
-            });
-            updateStars();
-        }
-
-        function updateStars() {
-            const stars = document.querySelectorAll('#star-container span');
-            stars.forEach(s => {
-                if(parseInt(s.dataset.val) <= currentRating) s.classList.add('active');
-                else s.classList.remove('active');
-            });
-        }
-
-        async function submitFeedback() {
-            const text = document.getElementById('feedback-text').value.trim();
-            const btn = document.getElementById('submit-fb-btn');
-            
-            if(!text) { alert("请写点什么吧~"); return; }
-
-            btn.disabled = true;
-            btn.innerText = "正在发送...";
-
-            // 构造要发送的数据
-            const feedbackData = {
-                rating: currentRating + " 星", // 评分
-                message: text,                 // 留言内容
-                device: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'Mobile' : 'PC',
-                date: new Date().toLocaleString()
-            };
-
-            try {
-                // 发送到 Formspree
-                const response = await fetch(FORMSPREE_ENDPOINT, {
-                    method: 'POST',
-                    body: JSON.stringify(feedbackData),
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    alert("感谢您的反馈！我们已收到邮件通知。");
-                    document.getElementById('feedback-text').value = '';
-                    closeModal('feedback-modal');
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "提交失败");
-                }
-            } catch (err) {
-                alert("发送失败: " + err.message);
-                console.error(err);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "提交反馈";
-            }
-        }
-
-        // === 搜索功能 ===
-        function submitSearch() {
-            const input = document.getElementById('search-input');
-            const query = input.value;
-            input.blur();
-            handleSearch(query);
-        }
-
-        function handleSearch(query) {
-            query = query.trim().toLowerCase();
-            if (!query) return;
-
-            let result = fullLibrary.find(w => w.en.toLowerCase() === query);
-            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().startsWith(query));
-            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().includes(query));
-
-            if (result) {
-                showModal('search-modal', result.en, result.zh);
+            if (isListening) {
+                recognition.stop();
             } else {
-                showModal('search-modal', "未找到", `在 ${fullLibrary.length} 个单词中未找到 "${query}"。`);
+                // 启动前先播放一次标准音，辅助用户
+                // playAudio(); 
+                // 延迟一点启动录音，防止采集到系统TTS的声音
+                // setTimeout(() => recognition.start(), 500);
+                try {
+                    recognition.start();
+                } catch(e) {
+                    recognition.stop(); // 防止重复启动报错
+                    setTimeout(() => recognition.start(), 100);
+                }
             }
-            document.getElementById('search-input').value = '';
         }
 
-        function showModal(id, word, def) {
-            if(id === 'search-modal') {
-                document.getElementById('modal-word').innerText = word;
-                document.getElementById('modal-def').innerText = def;
+        function updateMicUI(active) {
+            const btn = document.getElementById('mic-btn');
+            if (active) btn.classList.add('listening');
+            else btn.classList.remove('listening');
+        }
+
+        // 核心：比对发音
+        function checkPronunciation(userSpoke) {
+            // 移除特殊字符，只保留字母进行比对
+            const cleanTarget = currentTargetWord.toLowerCase().replace(/[^a-z]/g, '');
+            const cleanUser = userSpoke.replace(/[^a-z]/g, '');
+
+            console.log(`Target: ${cleanTarget}, User: ${cleanUser}`);
+
+            // 模糊匹配逻辑 (允许包含关系)
+            const isMatch = cleanUser === cleanTarget || cleanUser.includes(cleanTarget) || cleanTarget.includes(cleanUser);
+
+            const msgBox = document.getElementById('speak-msg');
+            if (isMatch) {
+                msgBox.innerHTML = `✅ 发音准确! (识别: "${userSpoke}")`;
+                msgBox.className = "speak-feedback speak-success";
+                // 答对震动提示
+                if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+            } else {
+                msgBox.innerHTML = `⚠️ 再试一次 (识别: "${userSpoke}")`;
+                msgBox.className = "speak-feedback speak-fail";
             }
-            document.getElementById(id).style.display = 'flex';
         }
 
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // === 游戏逻辑 ===
-        function loadLevel() {
-            document.getElementById('next-btn').style.display = 'none';
-            matches = 0; selectedEn = null; selectedZh = null;
-
-            if (gamePool.length === 0) { alert("恭喜！所有单词已完成！"); return; }
-
-            const count = Math.min(8, gamePool.length);
-            currentRound = gamePool.splice(0, count);
-            updateStats();
-
-            const colEn = document.getElementById('col-en');
-            const colZh = document.getElementById('col-zh');
-            colEn.innerHTML = ''; colZh.innerHTML = '';
-
-            let listEn = currentRound.map(i => ({id: i.en, text: i.en, type: 'en'}));
-            let listZh = currentRound.map(i => ({id: i.en, text: i.zh, type: 'zh'}));
+        // 打开单词卡片 (查词或长按)
+        function openWordModal(word, def) {
+            currentTargetWord = word;
+            document.getElementById('modal-word').innerText = word;
+            document.getElementById('modal-def').innerText = def;
+            document.getElementById('speak-msg').innerText = "点击麦克风开始跟读";
+            document.getElementById('speak-msg').className = "speak-feedback";
+            updateMicUI(false);
             
-            shuffle(listEn); shuffle(listZh);
-
-            listEn.forEach(d => colEn.appendChild(createCard(d)));
-            listZh.forEach(d => colZh.appendChild(createCard(d)));
+            document.getElementById('word-modal').style.display = 'flex';
         }
 
+        // ==========================================
+        // 长按功能实现 (Long Press)
+        // ==========================================
+        let pressTimer;
+        function handleTouchStart(data) {
+            if(data.type !== 'en') return; // 只有英文卡片支持长按
+            pressTimer = setTimeout(() => {
+                // 获取完整释义（可能需要从 fullLibrary 查找以获得最全信息）
+                const fullInfo = fullLibrary.find(i => i.en === data.text) || data;
+                openWordModal(fullInfo.en, fullInfo.zh);
+                // 重置选中状态防止触发游戏匹配
+                resetSelection(); 
+            }, 600); // 长按 600ms 触发
+        }
+        function handleTouchEnd() {
+            clearTimeout(pressTimer);
+        }
+        function resetSelection() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(c => c.classList.remove('selected'));
+            selectedEn = null; selectedZh = null;
+        }
+
+        // ==========================================
+        // 游戏逻辑 & 其他保持不变
+        // ==========================================
         function createCard(data) {
             const div = document.createElement('div');
             div.className = `card ${data.type}`;
             div.innerText = data.text;
             div.dataset.id = data.id;
             div.dataset.type = data.type;
+            
+            // 点击事件 (游戏匹配)
             div.onclick = () => handleTap(div);
+
+            // 长按事件 (学习跟读) - 仅限移动端体验优化
+            div.addEventListener('touchstart', () => handleTouchStart(data), {passive: true});
+            div.addEventListener('touchend', handleTouchEnd);
+            // 电脑端右键辅助
+            div.oncontextmenu = (e) => {
+                e.preventDefault();
+                if(data.type === 'en') {
+                    const fullInfo = fullLibrary.find(i => i.en === data.text) || data;
+                    openWordModal(fullInfo.en, fullInfo.zh);
+                }
+            };
+            
             return div;
         }
 
         function handleTap(el) {
             if (isProcessing || el.classList.contains('matched') || el.classList.contains('selected')) return;
             if (navigator.vibrate) navigator.vibrate(5);
-
             el.classList.add('selected');
-            
             if (el.dataset.type === 'en') {
                 if (selectedEn) selectedEn.classList.remove('selected');
                 selectedEn = el;
@@ -421,7 +460,6 @@
                 if (selectedZh) selectedZh.classList.remove('selected');
                 selectedZh = el;
             }
-
             if (selectedEn && selectedZh) checkMatch();
         }
 
@@ -430,30 +468,58 @@
             const isMatch = selectedEn.dataset.id === selectedZh.dataset.id;
             totalAttempts++; if (!isMatch) totalErrors++;
             updateErrorStats();
-
             if (isMatch) {
                 matches++;
                 selectedEn.classList.replace('selected', 'matched');
                 selectedZh.classList.replace('selected', 'matched');
-                selectedEn = null; selectedZh = null;
-                isProcessing = false;
-
+                selectedEn = null; selectedZh = null; isProcessing = false;
                 if (matches === currentRound.length) {
                     document.getElementById('next-btn').style.display = 'block';
                     setTimeout(() => { document.querySelector('main').scrollTo({ top: 9999, behavior: 'smooth' }); }, 200);
                 }
             } else {
-                selectedEn.classList.add('wrong');
-                selectedZh.classList.add('wrong');
+                selectedEn.classList.add('wrong'); selectedZh.classList.add('wrong');
                 if (navigator.vibrate) navigator.vibrate(50);
-
                 setTimeout(() => {
-                    selectedEn.classList.remove('selected', 'wrong');
-                    selectedZh.classList.remove('selected', 'wrong');
-                    selectedEn = null; selectedZh = null;
-                    isProcessing = false;
+                    selectedEn.classList.remove('selected', 'wrong'); selectedZh.classList.remove('selected', 'wrong');
+                    selectedEn = null; selectedZh = null; isProcessing = false;
                 }, 400);
             }
+        }
+
+        function submitSearch() {
+            const input = document.getElementById('search-input');
+            const query = input.value.trim().toLowerCase();
+            input.blur();
+            if (!query) return;
+
+            let result = fullLibrary.find(w => w.en.toLowerCase() === query);
+            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().startsWith(query));
+            if (!result) result = fullLibrary.find(w => w.en.toLowerCase().includes(query));
+
+            if (result) {
+                openWordModal(result.en, result.zh);
+            } else {
+                alert(`未找到单词: ${query}`);
+            }
+            document.getElementById('search-input').value = '';
+        }
+
+        // 保持原有的反馈提交、统计、关卡加载等函数...
+        function loadLevel() {
+            document.getElementById('next-btn').style.display = 'none';
+            matches = 0; selectedEn = null; selectedZh = null;
+            if (gamePool.length === 0) { alert("恭喜！所有单词已完成！"); return; }
+            const count = Math.min(8, gamePool.length);
+            currentRound = gamePool.splice(0, count);
+            updateStats();
+            const colEn = document.getElementById('col-en'); const colZh = document.getElementById('col-zh');
+            colEn.innerHTML = ''; colZh.innerHTML = '';
+            let listEn = currentRound.map(i => ({id: i.en, text: i.en, type: 'en'}));
+            let listZh = currentRound.map(i => ({id: i.en, text: i.zh, type: 'zh'}));
+            shuffle(listEn); shuffle(listZh);
+            listEn.forEach(d => colEn.appendChild(createCard(d)));
+            listZh.forEach(d => colZh.appendChild(createCard(d)));
         }
 
         function updateErrorStats() {
@@ -461,18 +527,45 @@
             el.innerText = `${totalErrors}/${totalAttempts}`;
             if (totalErrors > 0) el.classList.add('error-text');
         }
-
-        window.nextLevel = function() {
-            loadLevel(); document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
         function updateStats() {
             const total = fullLibrary.length;
             const pct = total > 0 ? ((total - gamePool.length) / total) * 100 : 0;
             document.getElementById('progress-bar').style.width = `${pct}%`;
         }
-
         function shuffle(arr) { arr.sort(() => Math.random() - 0.5); }
+        function closeModal(id) {
+             document.getElementById(id).style.display = 'none';
+             if(id==='word-modal') { window.speechSynthesis.cancel(); if(recognition) recognition.stop(); }
+        }
+        
+        // 反馈功能函数
+        function openFeedback() { 
+            if (FORMSPREE_ENDPOINT.includes("YOUR_ID")) { alert("请配置 Formspree ID"); return; }
+            document.getElementById('feedback-modal').style.display = 'flex'; 
+        }
+        function initStarRating() {
+             const stars = document.querySelectorAll('#star-container span');
+             stars.forEach(star => { star.onclick = function() { currentRating = parseInt(this.dataset.val); updateStars(); } });
+             updateStars();
+        }
+        function updateStars() {
+             const stars = document.querySelectorAll('#star-container span');
+             stars.forEach(s => { if(parseInt(s.dataset.val) <= currentRating) s.classList.add('active'); else s.classList.remove('active'); });
+        }
+        async function submitFeedback() {
+            const text = document.getElementById('feedback-text').value.trim();
+            const btn = document.getElementById('submit-fb-btn');
+            if(!text) { alert("请填写内容"); return; }
+            btn.disabled = true; btn.innerText = "发送中...";
+            try {
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST', body: JSON.stringify({ rating: currentRating + "星", message: text, date: new Date().toLocaleString() }),
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+                });
+                if (response.ok) { alert("反馈已发送！"); document.getElementById('feedback-text').value = ''; closeModal('feedback-modal'); }
+                else throw new Error("提交失败");
+            } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerText = "提交反馈"; }
+        }
 
         init();
     </script>
